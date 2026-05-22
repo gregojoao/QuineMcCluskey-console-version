@@ -5,4 +5,4 @@ O Algoritmo de Quine McCluskey versão Console foi criado para minimizar funçõ
 
 O Software faz a leitura de uma determinada entrada do Mapa de Karnaugh via arquivo txt e aplica o Algoritmo de Quine McCluskey, minimizando em uma função booleana e a imprimindo no console.
 
-Já existe a versão gráfica do algoritmo, feita em Windows Forms. Onde é possível selecionar em um mapa de Karnaugh os valores da função e então minimizá-las: https://github.com/JuniorGreco/QuineMcCluskey-graphic-version
+Já existe a versão gráfica do algoritmo, feita em Windows Forms. Onde é possível selecionar em um mapa de Karnaugh os valores da função e então minimizá-las: [https://github.com/JuniorGreco/QuineMcCluskey-graphic-version](https://github.com/gregojoao/QuineMcCluskey-graphic-version)
