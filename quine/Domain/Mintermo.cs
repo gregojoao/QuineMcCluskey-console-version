@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace quine
+namespace quine.Domain
 {
     public class Mintermo
     {

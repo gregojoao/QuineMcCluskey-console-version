@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using quine.Domain;
+using quine.Infrastructure;
 
 namespace quine
 {

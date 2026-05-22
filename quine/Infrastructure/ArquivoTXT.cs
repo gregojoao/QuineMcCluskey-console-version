@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using quine.Domain;
 
-namespace quine
+namespace quine.Infrastructure
 {
     class ArquivoTXT
     {
