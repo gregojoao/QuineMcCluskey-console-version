@@ -5,7 +5,7 @@ using quine.Domain;
 
 namespace quine.Infrastructure
 {
-    class ArquivoTXT
+    public class ArquivoTXT
     {
         private readonly string caminhoArquivo;
         private int numeroVariaveis;
