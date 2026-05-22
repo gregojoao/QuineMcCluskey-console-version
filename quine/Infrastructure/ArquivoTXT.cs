@@ -1,27 +1,29 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
+using quine.Domain;
 
-namespace quine
+namespace quine.Infrastructure
 {
-    class ArquivoTXT
+    public class ArquivoTXT
     {
-        private string caminhoArquivo;
+        private readonly string caminhoArquivo;
         private int numeroVariaveis;
 
         public ArquivoTXT(string caminhoArquivo)
         {
             this.numeroVariaveis = 0;
-            this.caminhoArquivo = App_Path() + caminhoArquivo;
+            if (Path.IsPathRooted(caminhoArquivo))
+                this.caminhoArquivo = caminhoArquivo;
+            else if (File.Exists(caminhoArquivo))
+                this.caminhoArquivo = Path.GetFullPath(caminhoArquivo);
+            else
+                this.caminhoArquivo = Path.Combine(App_Path(), caminhoArquivo.TrimStart('\\', '/'));
         }
 
         private string App_Path()
         {
-            var location = System.Reflection.Assembly.GetExecutingAssembly().Location;
-            var appPath = Path.GetDirectoryName(location);
-            var appName = Path.GetFileName(location);
-
-            return appPath;
+            return AppContext.BaseDirectory;
         }
 
         public int PegarNumeroVariaveis()
@@ -35,73 +37,71 @@ namespace quine
 
         private int PegarNumeroMintermos()
         {
-            StreamReader arquivoTXT = new StreamReader(caminhoArquivo);
-            
-            string conteudo = arquivoTXT.ReadLine();
-            string ultimoMintermoAux = "";
-            string numeroMintermo = "";
-            int ultimoMintermo = 0;
+            List<int> dontCares = new List<int>();
+            List<int> posicoes = new List<int>();
 
-            foreach (char caracter in conteudo)
+            SepararTermos(LerConteudo(), posicoes, dontCares);
+
+            int ultimoMintermo = -1;
+
+            foreach (int posicao in posicoes)
             {
-                if (caracter == ';')
-                {
-                    ultimoMintermoAux = numeroMintermo;
-                    numeroMintermo = "";
-                }
-                else if (caracter != ';' && caracter != '-')
-                    numeroMintermo += caracter.ToString();
+                if (posicao > ultimoMintermo)
+                    ultimoMintermo = posicao;
             }
 
-            var numeroMintermos = 0;
-            ultimoMintermo = Convert.ToInt32(ultimoMintermoAux);
-
-            for (int i = 1; i < 1000000000; i++)
+            foreach (int dontCare in dontCares)
             {
-                if (ultimoMintermo >= Math.Pow(2, i) && ultimoMintermo < Math.Pow(2, i + 1))
-                {
-                    numeroMintermos = Convert.ToInt32(Math.Pow(2, i + 1));
-                    break;
-                }
+                if (dontCare > ultimoMintermo)
+                    ultimoMintermo = dontCare;
             }
-            
+
+            int numeroMintermos = 1;
+
+            while (numeroMintermos <= ultimoMintermo)
+                numeroMintermos *= 2;
+
             return numeroMintermos;
         }
 
         public List<Mintermo> CarregarMintermos()
         {
-            List<Mintermo> Mintermos = new List<Mintermo>();
-            List<int> DontCares = new List<int>();
-            List<int> Posicoes = new List<int>();
+            List<int> dontCares = new List<int>();
+            List<int> posicoes = new List<int>();
 
-            StreamReader arquivoTXT = new StreamReader(caminhoArquivo);
+            SepararTermos(LerConteudo(), posicoes, dontCares);
 
-            Boolean ehDontCare = false;
+            return PopularMintermos(posicoes, dontCares);
+        }
 
-            string conteudo = arquivoTXT.ReadLine();
-            string posicaoMintermo = "";
+        private string LerConteudo()
+        {
+            if (!File.Exists(caminhoArquivo))
+                throw new FileNotFoundException("Arquivo de mapa de Karnaugh não encontrado.", caminhoArquivo);
 
-            foreach (char caracter in conteudo)
+            return File.ReadAllText(caminhoArquivo);
+        }
+
+        private static void SepararTermos(string conteudo, List<int> posicoes, List<int> dontCares)
+        {
+            foreach (string termoOriginal in conteudo.Split(new[] { ';', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries))
             {
-                if (caracter == ';')
-                {
-                    if (ehDontCare)
-                        DontCares.Add(Convert.ToInt32(posicaoMintermo));
-                    else
-                        Posicoes.Add(Convert.ToInt32(posicaoMintermo));
-                    
-                    posicaoMintermo = "";
-                    ehDontCare = false;
-                }
-                else if (caracter == '-')
-                    ehDontCare = true;
+                string termo = termoOriginal.Trim();
+
+                if (termo.Length == 0)
+                    continue;
+
+                bool ehDontCare = termo.StartsWith("-");
+                string numero = ehDontCare ? termo.Substring(1).Trim() : termo;
+
+                if (!int.TryParse(numero, out int posicao))
+                    throw new FormatException("Termo inválido no mapa de Karnaugh: " + termo);
+
+                if (ehDontCare)
+                    dontCares.Add(posicao);
                 else
-                    posicaoMintermo += caracter.ToString();
+                    posicoes.Add(posicao);
             }
-
-            Mintermos = PopularMintermos(Posicoes, DontCares);
-
-            return Mintermos;
         }
 
         private List<Mintermo> PopularMintermos(List<int> Mintermos, List<int> DontCares)
@@ -173,10 +173,10 @@ namespace quine
                         contadorAux += 1;
 
                         if (contadorAux <= quantPulos)
-                            Mintermos[j].Variaveis = Mintermos[j].Variaveis.PadLeft(contador+1, '0');
+                            Mintermos[j].Variaveis = Mintermos[j].Variaveis.PadLeft(contador + 1, '0');
                         else
                         {
-                            Mintermos[j].Variaveis = Mintermos[j].Variaveis.PadLeft(contador+1, '1');
+                            Mintermos[j].Variaveis = Mintermos[j].Variaveis.PadLeft(contador + 1, '1');
 
                             if (contadorAux == quantPulos * 2)
                                 contadorAux = 0;
@@ -212,7 +212,7 @@ namespace quine
 
                 contador += 1;
             }
-            
+
             return ResultadoMintermos;
         }
     }

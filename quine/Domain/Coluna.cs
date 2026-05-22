@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace quine
+namespace quine.Domain
 {
     public class Coluna
     {

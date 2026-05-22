@@ -1,8 +1,14 @@
 
 \.vs/
 
+**/bin/
+
+**/obj/
+
 quine/bin/Debug/quine\.exe
 
 quine/bin/Debug/quine\.pdb
 
 quine/obj/
+
+quine/bin/Release/
